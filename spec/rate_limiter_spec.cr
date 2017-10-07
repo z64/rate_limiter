@@ -25,6 +25,13 @@ describe RateLimiter do
       sleep 1
       bucket.rate_limited?(0).should be_truthy
     end
+
+    it "cleans unused buckets" do
+      bucket = RateLimiter::Bucket(Int32).new(1_u32, 1.seconds, 1.seconds)
+      bucket.rate_limited?(0)
+      bucket.clean(Time.now + 1.seconds)
+      bucket.rate_limited?(0).should be_false
+    end
   end
 
   it "creates a new bucket" do

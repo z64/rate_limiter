@@ -61,6 +61,20 @@ class RateLimiter(T)
         false
       end
     end
+
+    # Cleans the bucket, removing all elements that aren't necessary anymore.
+    # Accepts a `Time` to base the cleaning on, only useful for testing.
+    def clean(rate_limit_time = nil)
+      rate_limit_time ||= Time.now
+
+      @bucket.delete_if do |_, query|
+        return false if @time_span && rate_limit_time < (query.set_time + @time_span)
+
+        return false if @delay && rate_limit_time < (query.set_time + @time_span)
+
+        true
+      end
+    end
   end
 
   def initialize
@@ -71,6 +85,12 @@ class RateLimiter(T)
   # See `Bucket#initialize`
   def bucket(name : Symbol, limit : UInt32, time_span : Time::Span, delay : Time::Span = 0.seconds)
     @buckets[name] = Bucket(T).new(limit, time_span, delay)
+  end
+
+  # Cleans all buckets.
+  # See `Bucket#clean`.
+  def clean
+    @buckets.each &.clean
   end
 
   # Searches for a bucket with `name`, and performs a rate limit request
