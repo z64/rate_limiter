@@ -10,7 +10,7 @@ describe RateLimiter do
     it "returns the remaining time when count is over the limit and time hasn't run out" do
       bucket = RateLimiter::Bucket(Int32).new(1_u32, 1.seconds, 5.seconds)
       bucket.rate_limited?(0)
-      bucket.rate_limited?(0).should be_truthy
+      bucket.rate_limited?(0).should be_a(Time::Span)
     end
 
     it "returns false on no rate limiting" do
@@ -22,8 +22,7 @@ describe RateLimiter do
     it "returns the remaining time when being delayed" do
       bucket = RateLimiter::Bucket(Int32).new(1_u32, 1.seconds, 5.seconds)
       bucket.rate_limited?(0)
-      sleep 1
-      bucket.rate_limited?(0).should be_truthy
+      bucket.rate_limited?(0, Time.now + 1.seconds).should be_a(Time::Span)
     end
 
     it "cleans unused buckets" do
