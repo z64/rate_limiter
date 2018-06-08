@@ -10,7 +10,7 @@ class RateLimiter(T)
       # The last time this query was hit
       property last_time : Time
 
-      # When this queries count was initialzed (set to 0)
+      # When this queries count was initialized (set to 0)
       property set_time : Time
 
       # The number of times this query has been hit
@@ -38,7 +38,7 @@ class RateLimiter(T)
       end
 
       # Define the time at which we're being rate limited once so it doesn't
-      # get innacurate
+      # get inaccurate
       rate_limit_time ||= Time.now
 
       if @limit && (query.count + 1) > @limit
@@ -55,7 +55,7 @@ class RateLimiter(T)
         # 4. We're being delayed
         (query.last_time + @delay) - rate_limit_time
       else
-        # 5. No rate limiting. Increment the ocunt, set the `last_time`, and return `false`
+        # 5. No rate limiting. Increment the count, set the `last_time`, and return `false`
         query.last_time = rate_limit_time
         query.count += 1
         false
