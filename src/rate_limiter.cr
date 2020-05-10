@@ -16,19 +16,29 @@ class RateLimiter(T)
       # The number of times this query has been hit
       property count : UInt32
 
-      def initialize(@last_time : Time, @set_time : Time, @count : UInt32)
+      def initialize(
+        @last_time : Time,
+        @set_time : Time,
+        @count : UInt32
+      )
       end
     end
 
     # Creates a new bucket that enforces a `limit` within a `time_span`,
     # optionally enforcing a minimum `delay` between queries.
-    def initialize(@limit : UInt32, @time_span : Time::Span,
-                   @delay : Time::Span = 0.seconds)
+    def initialize(
+      @limit : UInt32,
+      @time_span : Time::Span,
+      @delay : Time::Span = 0.seconds
+    )
       @bucket = {} of K => Query
     end
 
     # Performs a rate limit request on a certain `key`
-    def rate_limited?(key : K, rate_limit_time = nil)
+    def rate_limited?(
+      key : K,
+      rate_limit_time = nil
+    )
       query = @bucket[key]?
 
       # 1. Query doesn't exist yet; insert a default query and return `false`
@@ -43,7 +53,9 @@ class RateLimiter(T)
 
       if @limit && (query.count + 1) > @limit
         # 2. Count is over the limit, and the time hasn't run out yet
-        return (query.set_time + @time_span) - rate_limit_time if @time_span && rate_limit_time < (query.set_time + @time_span)
+        if @time_span && rate_limit_time < (query.set_time + @time_span)
+          return (query.set_time + @time_span) - rate_limit_time
+        end
 
         # 3. Count is over the limit, but the time has run out
         # Don't return anything here because there may still be delay-based limiting
@@ -83,7 +95,12 @@ class RateLimiter(T)
 
   # Creates a new bucket with `name` and specified properties.
   # See `Bucket#initialize`
-  def bucket(name : Symbol, limit : UInt32, time_span : Time::Span, delay : Time::Span = 0.seconds)
+  def bucket(
+    name : Symbol,
+    limit : UInt32,
+    time_span : Time::Span,
+    delay : Time::Span = 0.seconds
+  )
     @buckets[name] = Bucket(T).new(limit, time_span, delay)
   end
 
@@ -95,7 +112,10 @@ class RateLimiter(T)
 
   # Searches for a bucket with `name`, and performs a rate limit request
   # with `key`
-  def rate_limited?(name : Symbol, key : T)
+  def rate_limited?(
+    name : Symbol,
+    key : T
+  )
     if bucket = @buckets[name]?
       bucket.rate_limited?(key)
     else
