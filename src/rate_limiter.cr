@@ -33,13 +33,13 @@ class RateLimiter(T)
 
       # 1. Query doesn't exist yet; insert a default query and return `false`
       unless query
-        @bucket[key] = Query.new(Time.now, Time.now, 1_u32)
+        @bucket[key] = Query.new(Time.utc, Time.utc, 1_u32)
         return false
       end
 
       # Define the time at which we're being rate limited once so it doesn't
       # get inaccurate
-      rate_limit_time ||= Time.now
+      rate_limit_time ||= Time.utc
 
       if @limit && (query.count + 1) > @limit
         # 2. Count is over the limit, and the time hasn't run out yet
@@ -65,7 +65,7 @@ class RateLimiter(T)
     # Cleans the bucket, removing all elements that aren't necessary anymore.
     # Accepts a `Time` to base the cleaning on, only useful for testing.
     def clean(rate_limit_time = nil)
-      rate_limit_time ||= Time.now
+      rate_limit_time ||= Time.utc
 
       @bucket.delete_if do |_, query|
         return false if @time_span && rate_limit_time < (query.set_time + @time_span)
